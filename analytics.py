@@ -448,6 +448,16 @@ def analyze_workbook(source: Path, output_dir: Path = OUTPUT_DIR) -> dict[str, o
         ("Zero-quantity rows", quality["zero_quantity_rows"], "Zero quantity; excluded from sales and RFM"),
         ("Nonpositive-quantity rows", quality["nonpositive_quantity_rows"], "Quantity is zero or negative"),
         ("Nonpositive-price rows", quality["nonpositive_price_rows"], "Unit price is zero or negative"),
+        (
+            "First-month revenue change unavailable",
+            int(monthly["mom_revenue_change_pct"].isna().sum()),
+            "N/A: there is no preceding month for the first month in the series",
+        ),
+        (
+            "Cohort retention not yet observed",
+            int(cohort_matrix.isna().sum().sum()),
+            "Structural N/A: cohort months have not elapsed yet; these are not zero retention",
+        ),
     ]
     data_quality = pd.DataFrame(quality_rows, columns=["check", "rows", "interpretation"])
 
@@ -483,7 +493,27 @@ def analyze_workbook(source: Path, output_dir: Path = OUTPUT_DIR) -> dict[str, o
         "kpi_summary.csv": summary,
     }
     for filename, data in exports.items():
-        data.to_csv(output_dir / filename, index=False, encoding="utf-8-sig")
+        if filename == "cohort_retention_matrix.csv":
+            data.to_csv(
+                output_dir / filename,
+                index=False,
+                encoding="utf-8-sig",
+                na_rep="Not yet observed",
+            )
+        elif filename == "monthly_sales.csv":
+            monthly_export = data.copy()
+            monthly_export["mom_revenue_change_pct"] = (
+                monthly_export["mom_revenue_change_pct"].astype(object)
+            )
+            monthly_export.loc[
+                monthly_export["mom_revenue_change_pct"].isna(),
+                "mom_revenue_change_pct",
+            ] = "N/A: first month (no prior month)"
+            monthly_export.to_csv(
+                output_dir / filename, index=False, encoding="utf-8-sig"
+            )
+        else:
+            data.to_csv(output_dir / filename, index=False, encoding="utf-8-sig")
     (output_dir / "metrics.json").write_text(
         json.dumps(metrics, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -543,6 +573,8 @@ def create_charts(monthly, country, products, weekday, cohort_matrix, output_dir
 
     fig, ax = plt.subplots(figsize=(13, 7))
     sns.heatmap(cohort_matrix, cmap="YlGnBu", annot=True, fmt=".0f", vmin=0, vmax=100, ax=ax)
+    for row, column in np.argwhere(cohort_matrix.isna().to_numpy()):
+        ax.text(column + 0.5, row + 0.5, "N/O", ha="center", va="center", fontsize=6, color="#536579")
     ax.set(title="Customer cohort retention (%)", xlabel="Months since first purchase", ylabel="First purchase cohort")
     fig.tight_layout()
     fig.savefig(output_dir / "cohort_retention.png", dpi=180)
@@ -555,7 +587,19 @@ def _write_sheet(workbook, name: str, data: pd.DataFrame, percentage_columns=())
     sheet.freeze_panes = "A2"
     sheet.append([str(column) for column in data.columns])
     for row in data.itertuples(index=False, name=None):
-        sheet.append([None if pd.isna(value) else value.item() if isinstance(value, np.generic) else value for value in row])
+        values = []
+        for column, value in zip(data.columns, row):
+            if pd.isna(value):
+                if name == "Monthly Sales" and column == "mom_revenue_change_pct":
+                    value = "N/A: first month (no prior month)"
+                elif name == "Cohort Retention":
+                    value = "Not yet observed"
+                else:
+                    value = "Not available"
+            elif isinstance(value, np.generic):
+                value = value.item()
+            values.append(value)
+        sheet.append(values)
 
     for cell in sheet[1]:
         cell.font = Font(color="FFFFFF", bold=True)
@@ -644,7 +688,9 @@ def create_excel_workbook(
     overview.merge_cells("A13:F13")
     overview["A14"] = "The original transaction-level workbook is deliberately not included; use the documented input path to regenerate results."
     overview.merge_cells("A14:F14")
-    for row in range(11, 15):
+    overview["A15"] = "N/A means no prior month; N/O in the cohort heatmap means a future cohort period has not yet been observed."
+    overview.merge_cells("A15:F15")
+    for row in range(11, 16):
         overview[f"A{row}"].alignment = Alignment(wrap_text=True, vertical="top")
         overview.row_dimensions[row].height = 32
 
@@ -667,6 +713,8 @@ def create_excel_workbook(
             ("RFM recency", "Days from the most recent included sale to one day after the last sale in the dataset."),
             ("Cohort retention", "Share of customers in a first-purchase month who also purchased in each later month."),
             ("Missing customer ID", "Sales remain in revenue totals but cannot contribute to customer-level metrics."),
+            ("Not yet observed cohort cell", "The cohort has not been observable for that many months; it is not zero retention."),
+            ("First-month revenue change", "N/A because no prior month exists for comparison."),
         ],
         columns=["term", "definition"],
     )
@@ -682,7 +730,9 @@ def create_excel_workbook(
             monthly_sheet.cell(
                 row,
                 formula_column,
-                None if row == 2 else f'=IFERROR(B{row}/B{row - 1}-1,"")',
+                "N/A: first month (no prior month)"
+                if row == 2
+                else f'=IF(OR(B{row - 1}=0,B{row}=0),"Not calculable: one month has no positive sales",B{row}/B{row - 1}-1)',
             )
             monthly_sheet.cell(row, formula_column).number_format = "0.0%"
         next(iter(monthly_sheet.tables.values())).ref = (
@@ -783,6 +833,12 @@ Revenue is the sum of quantity × unit price for positive-quantity, positive-pri
 ## Analysis coverage
 
 The reproducible pipeline includes workbook profiling, missing-data and duplicate checks, rule-based cleaning, revenue and order KPIs, monthly trends and month-over-month change, geographic and product ranking, weekday/hour patterns, returns, customer-level RFM scoring and segment summaries, and customer cohort retention. Results are also delivered as a formatted Excel workbook with charts, filters, conditional formatting, and an Excel growth formula.
+
+## Missing and not-yet-observed values
+
+- The first monthly revenue-change value is N/A because no earlier month exists for comparison.
+- Triangular cells in the cohort-retention matrix marked **Not yet observed** (N/O in the chart) mean the corresponding cohort has not existed for that many elapsed months. They are not zero retention.
+- The CSV matrix uses `Not yet observed`; the workbook and heatmap label these structural gaps explicitly.
 
 ## Caveats
 

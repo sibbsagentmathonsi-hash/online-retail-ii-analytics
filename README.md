@@ -14,6 +14,7 @@ End-to-end, reproducible Excel and Python analytics for the **Online Retail II**
 - **Time patterns:** sales by weekday and hour.
 - **Returns:** negative-quantity return line, unit, and value summaries, separate from positive sales.
 - **Presentation:** Excel dashboard and charts, sortable/filterable tables, data bars, a retention heatmap, and five exported charts.
+- **Unavailable values:** first-month revenue change and cohort periods that have not elapsed are explicitly labeled, not left blank or treated as zero.
 
 ## Source data
 
@@ -48,6 +49,7 @@ The notebook can be run in VS Code with the **Jupyter** extension and the same `
 | --- | --- |
 | `outputs/online_retail_ii_analysis.xlsx` | Dashboard, Excel charts, KPI and quality tables, monthly sales, country/product results, weekday/hour profiles, customer segments, cohort retention, returns, and data dictionary |
 | `outputs/ANALYSIS_SUMMARY.md` | Automatically generated executive summary and findings |
+| `outputs/data_quality.csv` | Source-quality checks and counts of undefined or not-yet-observed measures |
 | `outputs/*.csv` | Aggregated analysis and quality tables for reuse in Excel, Python, or BI tools |
 | `outputs/metrics.json` | Machine-readable headline metrics and source profile |
 | `outputs/charts/*.png` | Monthly revenue, top countries, top products, weekday revenue, and cohort retention |
@@ -61,6 +63,7 @@ The notebook can be run in VS Code with the **Jupyter** extension and the same `
 - **Customer analysis** requires an identified customer ID. Revenue lines without an ID still count in product, country, and total sales results.
 - **RFM** recency is measured as days since the most recent identified sale, frequency is distinct included invoices, and monetary value is included sales revenue. Scores are quartile-based within this dataset; segments are descriptive, not predictions.
 - **Cohort retention** counts identified customers from their first purchase month who make a purchase in each later month. It is not a causal or lifetime-value estimate.
+- The first month-over-month revenue change is `N/A: first month (no prior month)`. Cohort cells beyond the observed follow-up period are `Not yet observed` (shown as `N/O` on the heatmap), not zero retention. The same explanations appear in the workbook's **Data Quality** and **Data Dictionary** sheets.
 - Revenue stays in the source workbook's price units. No currency symbol, tax, shipping, or currency conversion is inferred.
 - Exact duplicate rows are identified with a 64-bit row fingerprint. A collision is theoretically possible but extraordinarily unlikely.
 

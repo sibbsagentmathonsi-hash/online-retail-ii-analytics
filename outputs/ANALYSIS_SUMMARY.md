@@ -47,6 +47,12 @@ Revenue is the sum of quantity × unit price for positive-quantity, positive-pri
 
 The reproducible pipeline includes workbook profiling, missing-data and duplicate checks, rule-based cleaning, revenue and order KPIs, monthly trends and month-over-month change, geographic and product ranking, weekday/hour patterns, returns, customer-level RFM scoring and segment summaries, and customer cohort retention. Results are also delivered as a formatted Excel workbook with charts, filters, conditional formatting, and an Excel growth formula.
 
+## Missing and not-yet-observed values
+
+- The first monthly revenue-change value is N/A because no earlier month exists for comparison.
+- Triangular cells in the cohort-retention matrix marked **Not yet observed** (N/O in the chart) mean the corresponding cohort has not existed for that many elapsed months. They are not zero retention.
+- The CSV matrix uses `Not yet observed`; the workbook and heatmap label these structural gaps explicitly.
+
 ## Caveats
 
 - This is descriptive analysis, not a forecast or causal explanation.

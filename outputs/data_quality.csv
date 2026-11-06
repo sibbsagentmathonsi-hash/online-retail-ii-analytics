@@ -13,3 +13,5 @@ Negative-quantity return rows,22496,Negative quantity; excluded from sales and R
 Zero-quantity rows,0,Zero quantity; excluded from sales and RFM
 Nonpositive-quantity rows,22496,Quantity is zero or negative
 Nonpositive-price rows,6019,Unit price is zero or negative
+First-month revenue change unavailable,1,N/A: there is no preceding month for the first month in the series
+Cohort retention not yet observed,300,Structural N/A: cohort months have not elapsed yet; these are not zero retention
