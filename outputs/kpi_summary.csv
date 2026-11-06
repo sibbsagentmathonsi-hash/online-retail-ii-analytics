@@ -1,0 +1,11 @@
+﻿metric,value,definition
+Source rows,1067371.0,Rows in both source worksheets
+Exact duplicate rows removed,34335.0,Duplicate source rows
+Sales lines analyzed,1007913.0,"Positive quantity and price, valid date, non-cancellation"
+Orders,40077.0,Distinct invoices from included sales lines
+Identified customers,5878.0,Distinct customers represented in RFM analysis
+Revenue,20476260.448,Positive-sale line value; returns/cancellations excluded
+Average order value,510.92298445492423,Included positive sales revenue divided by distinct invoices
+Units sold,11205148.0,Sum of positive quantities in included sales lines
+Cancellation invoices,8292.0,Distinct invoices with an ID starting with C
+Negative-quantity return lines,22496.0,Negative quantity rows reported separately

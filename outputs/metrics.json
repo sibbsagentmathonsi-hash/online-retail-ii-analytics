@@ -1,0 +1,24 @@
+{
+  "source_file": "online_retail_II.xlsx",
+  "source_rows": 1067371,
+  "exact_duplicate_rows": 34335,
+  "analyzed_sales_lines": 1007913,
+  "excluded_non_sales_rows": 25123,
+  "unique_orders": 40077,
+  "identified_customers": 5878,
+  "unidentified_sales_lines": 228488,
+  "positive_sales_revenue": 20476260.448,
+  "average_order_value": 510.92298445492423,
+  "units_sold": 11205148,
+  "sales_date_start": "2009-12-01",
+  "sales_date_end": "2011-12-09",
+  "source_sheets": [
+    "Year 2009-2010",
+    "Year 2010-2011"
+  ],
+  "unique_cancellation_invoices": 8292,
+  "cancellation_rows": 19104,
+  "negative_quantity_return_rows": 22496,
+  "negative_quantity_return_value": 1462424.1799999995,
+  "missing_customer_id_rows": 235151
+}

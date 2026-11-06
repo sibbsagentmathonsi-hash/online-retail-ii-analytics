@@ -1,0 +1,15 @@
+﻿check,rows,interpretation
+Source rows,1067371,Rows across both worksheets
+Exact duplicate rows,34335,Repeated source rows removed before analysis
+Missing invoice,0,Invoice identifier is blank
+Missing stock code,0,Stock code is blank
+Missing description,4275,Description is blank
+Missing customer ID,235151,Customer-level analysis cannot identify these rows
+Sales lines without customer ID,228488,Included in sales totals but not customer analytics
+Missing country,0,Country is blank; sales analysis groups it as Unknown
+Invalid invoice date,0,Invoice date could not be parsed
+Cancellation rows,19104,Invoice identifier starts with C
+Negative-quantity return rows,22496,Negative quantity; excluded from sales and RFM
+Zero-quantity rows,0,Zero quantity; excluded from sales and RFM
+Nonpositive-quantity rows,22496,Quantity is zero or negative
+Nonpositive-price rows,6019,Unit price is zero or negative
